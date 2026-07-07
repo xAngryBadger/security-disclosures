@@ -4,13 +4,14 @@
 [![Fixed](https://img.shields.io/badge/Fixed-5-2EA043?style=flat-square)]()
 [![Open](https://img.shields.io/badge/Open-9+-DA3633?style=flat-square)]()
 [![Uncertain](https://img.shields.io/badge/Uncertain-2+-D29922?style=flat-square)]()
+[![Private Sector](https://img.shields.io/badge/Private%20Sector-Fixed-8B6914?style=flat-square)]()
 
-**🇧🇷 PT-BR** — Relatórios de divulgação responsável de vulnerabilidades — 20+ findings em infraestrutura governamental e setorial brasileira, 5 correções confirmadas e verificadas via CERT.br/CTIR Gov.
+**🇧🇷 PT-BR** — Relatórios de divulgação responsável de vulnerabilidades — 20+ findings em infraestrutura governamental, setorial e privada brasileira, 6 correções confirmadas (5 via CERT.br/CTIR Gov + 1 via disclosure direta).
 
 <details>
 <summary><b>🇺🇸 English version</b></summary>
 
-**🇺🇸 English** — Responsible vulnerability disclosure reports — 20+ findings in Brazilian government and sectoral infrastructure, 5 confirmed fixes verified via CERT.br/CTIR Gov.
+**🇺🇸 English** — Responsible vulnerability disclosure reports — 20+ findings in Brazilian government, sectoral, and private infrastructure, 6 confirmed fixes (5 via CERT.br/CTIR Gov + 1 via direct disclosure).
 
 </details>
 
@@ -57,6 +58,7 @@ Complete table of all identified vulnerabilities, with LGPD article mapping.
 | mentoriadom admin panel | Base44 platform | SPA admin sitemap visible | 🟡 Uncertain | Art. 46 |
 | SAF/SUS unauth-file-upload | Ministério da Saúde | Directory Listing | 🟡 Uncertain (timeout) | Art. 6 III, Art. 46 |
 | BairesDev credential mix-up | BairesDev (private sector) | Credential exposure | 🟡 Uncertain (resolved internally) | Art. 6 III |
+| Barcelos Lex API auth bypass | Barcelos Lex (private sector) | Missing Auth (CWE-306) | 🟢 Fixed — direct disclosure | Art. 46 |
 
 ---
 
@@ -114,6 +116,15 @@ Chronological timeline of disclosures and verifications.
 
 **June 2026 — Full Verification (16/06)**
 - Full re-verification of all findings
+
+**Julho 2026 — 4ª Onda (Private Sector)**
+- Barcelos Lex (barcelosprev.com.br) — API de assistente jurídico premium sem autenticação
+- V-001 (Missing Auth / CWE-306): bypass direto da assinatura premium, acesso ao Kelsen (chatbot)
+- Endpoint /api/assistente exposto: retornava respostas do assistente jurídico sem exigir login
+- Vendor corrigiu durante a janela de disclosure — endpoint agora retorna 401
+- +4 findings adicionais (headers, infra, rota fantasma, rate limiting)
+- Resposta positiva do vendor, correção confirmada em múltiplos IPs
+- Relatório completo: `barcelosprev/vulnerability.md`
 
 </details>
 
@@ -294,6 +305,26 @@ Tools and frameworks used.
 | **Frameworks** | NIST CSF · OWASP Top 10 · CIS Controls (awareness) |
 
 </details>
+
+---
+
+### 📋 Casos Recentes
+
+#### Barcelos Lex (Julho 2026) — Private Sector Disclosure
+
+**Contexto:** Plataforma jurídica com IA (Barcelos Lex / Barcelos Prev) — chatbot premium "Kelsen" protegido por assinatura. Durante análise de rotas, o endpoint `/api/assistente` foi identificado sem qualquer autenticação.
+
+**Descoberta:** O endpoint aceitava requisições POST com `{"pergunta": "..."}` e retornava o conteúdo premium do assistente jurídico sem exigir token, sessão ou assinatura válida. Qualquer visitante que inspecionasse o JS do frontend descobriria a rota.
+
+**Resultado:** 5 vulnerabilidades reportadas (1 crítica, 1 alta, 2 médias, 1 baixa). A crítica (V-001) foi corrigida durante a janela de disclosure — o vendor implementou autenticação, rate limiting via Redis, trial de 14 dias com controle por email/telefone. Resposta positiva do fundador (Romualdo), que agradeceu o toque e implementou melhorias adicionais.
+
+**Timeline:**
+- 06/07/2026 13:44 — Descoberta do /api/assistente sem auth
+- 06/07/2026 21:21 — Vendor solicitou relatório via LinkedIn
+- 06/07/2026 22:55 — Correção confirmada (401 em múltiplos IPs)
+- 06/07/2026 23:26 — Vendor agradeceu, confirmou correções
+
+**Metodologia usada:** Passive recon → JS bundle analysis → API endpoint enum → Auth bypass → Responsible disclosure → Fix verification (multi-IP via Tor)
 
 ---
 
